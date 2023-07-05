@@ -3,8 +3,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-import static java.lang.Integer.valueOf;
-
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -16,8 +14,7 @@ public class Main {
         }
         parts = reader.readLine().split(" ");
         int[] parent = new int[n];
-        //List<Integer> pallets = new ArrayList<>();
-        Set<Integer> pallets = new TreeSet<>();
+        TreeSet<Integer> pallets = new TreeSet<>();
         for (int i = 0; i < n; i++) {
             parent[i] = Integer.parseInt(parts[i]);
             if (parent[i] == 0) {
@@ -25,30 +22,34 @@ public class Main {
             }
         }
         int k = Integer.parseInt(reader.readLine());
-        Set<Integer> set = new HashSet<>(k);
+        HashSet<Integer> notDelivery = new HashSet<>(k);
         if (k != 0) {
             parts = reader.readLine().split(" ");
             for (int i = 0; i < k; i++) {
-                set.add(Integer.parseInt(parts[i]));
+                notDelivery.add(Integer.parseInt(parts[i]));
             }
         }
         if (n == k) {
             System.out.println(0);
         } else {
-            solve(set, delivery, parent, n, pallets);
+            solve(notDelivery, delivery, parent, n, pallets);
         }
         reader.close();
     }
 
-    private static void solve(Set<Integer> set, int[] delivery, int[] parent, int n, Set<Integer> pallets) {
-        Set<Integer> badPallets = new HashSet<>();
+    private static void solve(HashSet<Integer> notDelivery, int[] delivery, int[] parent, int n, TreeSet<Integer> pallets) {
+        Set<Integer> badBoxAndPallet = new HashSet<>();
         for (int i = 0; i < n; i++) {
             int num = i + 1;
-            if (set.contains(delivery[i])) {
+            if (notDelivery.contains(delivery[i])) {
+                if (badBoxAndPallet.contains(num)) {
+                    continue;
+                }
                 int p = parent[i];
                 if (p == 0) {
-                    badPallets.add(num);
+                    pallets.remove(num);
                 } else {
+                    boolean needRemove = true;
                     while (true) {
                         if (p - 1 >= n) {
                             break;
@@ -57,15 +58,21 @@ public class Main {
                             break;
                         } else {
                             p = parent[p - 1];
+                            if (badBoxAndPallet.contains(p)) {
+                                needRemove = false;
+                                break;
+                            } else {
+                                badBoxAndPallet.add(p);
+                            }
                         }
                     }
-                    if (!badPallets.contains(p)) {
-                        badPallets.add(p);
+                    if (needRemove) {
+                        pallets.remove(p);
                     }
                 }
             }
         }
-        pallets.removeAll(badPallets);
+
         StringBuilder sb = new StringBuilder();
         sb.append(pallets.size());
         sb.append("\n");
@@ -76,4 +83,3 @@ public class Main {
         System.out.println(sb);
     }
 }
-
